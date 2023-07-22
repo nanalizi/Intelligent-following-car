@@ -1,0 +1,224 @@
+import sensor, image, time, math
+from pyb import UART,LED
+import ustruct
+THRESHOLD = (0, 50) # Grayscale threshold for dark things...
+
+#设置是否使用img.binary()函数进行图像分割
+BINARY_VISIBLE = True # 首先执行二进制操作，以便您可以看到正在运行的线性回归...虽然可能会降低FPS。
+
+import sensor, image, time
+
+import time, image,sensor,math,pyb,ustruct,lcd
+from image import SEARCH_EX, SEARCH_DS
+
+
+
+LED(1).on()
+LED(2).on()
+LED(3).on()
+
+
+thresholds = (0, 43, -21, 23, -19, 127)
+thresholdsss = (7, 100, -5, 5, -3, 127)
+R1 = [(5,0,10,20)]
+R2 = [(15,0,10,20)]
+R3 = [(25,0,10,20)]
+R4 = [(35,0,10,20)]
+R5 = [(45,0,10,20)]
+R6 = [(55,0,10,20)]
+R7 = [(65,0,10,20)]
+R8 = [(75,0,10,20)]
+R9 = [(85,0,10,20)]
+R10 = [(95,0,10,20)]
+R11 = [(105,0,10,20)]
+R12 = [(115,0,10,20)]
+R13 = [(125,0,10,20)]
+R14 = [(135,0,10,20)]
+R15 = [(145,0,10,20)]
+
+
+uart = UART(3,115200)   #定义串口3变量
+uart.init(115200, bits=8, parity=None, stop=1) # init with given parameters
+dashabi=0
+sstop=0
+sancha=0
+def sending_data(cx,cy,cz,cj):
+    global uart;
+    #frame=[0x2C,18,cx%0xff,int(cx/0xff),cy%0xff,int(cy/0xff),0x5B];
+    #data = bytearray(frame)
+    data = ustruct.pack("<bbhhhhb",      #格式为俩个字符俩个短整型(2字节)
+                   0x2C,                      #帧头1
+                   0x12,                      #帧头2
+                   int(cx), # up sample by 4   #数据1
+                   int(cy),
+                   int(cz),
+                   int(cj),
+                   0x5B)
+    uart.write(data);   #必须要传入一个字节数组
+
+
+def change(ang,sb1,sb3,sb4):
+    if ang < 90:
+        ang = 90+ang+dashabi/4;
+    else:
+        ang = ang - 90+dashabi/3;
+    print(ang,sb1,sb3,sb4)
+    sending_data(ang,sb1,sb3,sb4)
+
+sensor.reset()
+sensor.set_pixformat(sensor.GRAYSCALE)
+sensor.set_framesize(sensor.QQVGA)
+sensor.skip_frames(time = 2000)
+clock = time.clock()
+
+while(True):
+    clock.tick()
+    img = sensor.snapshot()
+    numl=0
+    numr=0
+    sb1 = 0
+    sb2 = 0
+    sb3 = 0
+    sb4 = 0
+
+    # Returns a line object similar to line objects returned by find_lines() and
+    # find_line_segments(). You have x1(), y1(), x2(), y2(), length(),
+    # theta() (rotation in degrees), rho(), and magnitude().
+    #
+    # magnitude() represents how well the linear regression worked. It goes from
+    # (0, INF] where 0 is returned for a circle. The more linear the
+    # scene is the higher the magnitude.
+
+    # 函数返回回归后的线段对象line，有x1(), y1(), x2(), y2(), length(), theta(), rho(), magnitude()参数。
+    # x1 y1 x2 y2分别代表线段的两个顶点坐标，length是线段长度，theta是线段的角度。
+    # magnitude表示线性回归的效果，它是（0，+∞）范围内的一个数字，其中0代表一个圆。如果场景线性回归的越好，这个值越大。
+
+
+
+    for r in R1:  # 左
+        img.draw_rectangle(r[0:4])
+        blobs = img.find_blobs([thresholds], roi=r[0:4],merge=True)
+        if blobs:
+            numl=numl+1
+            sb1 = 1
+    for r in R2:  # 中上
+        img.draw_rectangle(r[0:4])
+        blobs = img.find_blobs([thresholds], roi=r[0:4],merge=True)
+        if blobs:
+            numl=numl+1
+            sb2 = 1
+
+    for r in R3:   #中下
+        img.draw_rectangle(r[0:4])
+        blobs = img.find_blobs([thresholds], roi=r[0:4],merge=True)
+        if blobs:
+            numl=numl+1
+            sb3 = 1
+
+    for r in R4:   # 右
+        img.draw_rectangle(r[0:4])
+        blobs = img.find_blobs([thresholds], roi=r[0:4],merge=True)
+        if blobs:
+            numl=numl+1
+            sb4 = 1
+    
+
+    for r in R5:  # 左
+        img.draw_rectangle(r[0:4])
+        blobs = img.find_blobs([thresholds], roi=r[0:4],merge=True)
+        if blobs:
+            numl=numl+1
+            sb1 = 1
+    for r in R6:  # 中上
+        img.draw_rectangle(r[0:4])
+        blobs = img.find_blobs([thresholds], roi=r[0:4],merge=True)
+        if blobs:
+            numl=numl+1
+            sb2 = 1
+
+    for r in R7:   #中下
+        img.draw_rectangle(r[0:4])
+        blobs = img.find_blobs([thresholds], roi=r[0:4],merge=True)
+        if blobs:
+            numl=numl+1
+            sb3 = 1
+
+    for r in R8:   # 右
+        img.draw_rectangle(r[0:4])
+        blobs = img.find_blobs([thresholds], roi=r[0:4],merge=True)
+        if blobs:
+            sb4 = 1
+    
+    for r in R9:  # 左
+        img.draw_rectangle(r[0:4])
+        blobs = img.find_blobs([thresholds], roi=r[0:4],merge=True)
+        if blobs:
+            numr=numr+1
+            sb1 = 1
+    for r in R10:  # 中上
+        img.draw_rectangle(r[0:4])
+        blobs = img.find_blobs([thresholds], roi=r[0:4],merge=True)
+        if blobs:
+            numr=numr+1
+            sb2 = 1
+
+    for r in R11:   #中下
+        img.draw_rectangle(r[0:4])
+        blobs = img.find_blobs([thresholds], roi=r[0:4],merge=True)
+        if blobs:
+            numr=numr+1
+            sb3 = 1
+
+    for r in R12:   # 右
+        img.draw_rectangle(r[0:4])
+        blobs = img.find_blobs([thresholds], roi=r[0:4],merge=True)
+        if blobs:
+            numr=numr+1
+            sb4 = 1
+    for r in R13:  # 左
+        img.draw_rectangle(r[0:4])
+        blobs = img.find_blobs([thresholds], roi=r[0:4],merge=True)
+        if blobs:
+            numr=numr+1
+            sb1 = 1
+    for r in R14:  # 中上
+        img.draw_rectangle(r[0:4])
+        blobs = img.find_blobs([thresholds], roi=r[0:4],merge=True)
+        if blobs:
+            numr=numr+1
+    for r in R15:  # 中上
+        img.draw_rectangle(r[0:4])
+        blobs = img.find_blobs([thresholds], roi=r[0:4],merge=True)
+        if blobs:
+            numr=numr+1
+    if numl>5 and numr>5:
+        print("sstop")  
+        sstop=1
+        sancha=0
+    if numl>2 and (numr>0 and numr<3):
+        print("sancha")
+        sstop=0
+        sancha=1
+    else :
+        print("go")
+        sstop=0
+        sancha=0
+    num=numl+numr
+    img = sensor.snapshot().binary([THRESHOLD]) if BINARY_VISIBLE else sensor.snapshot()
+    line = img.get_regression([(255,255) if BINARY_VISIBLE else THRESHOLD])
+    if (line):
+        img.draw_line(line.line(), color = 127)
+        dashabi = abs(line.rho())-img.width()/2 #直线偏移距离
+        angl = line.theta()
+        le = change(angl,sstop,sancha,num)
+    else:
+        angl = 180
+        le = change(angl,sstop,sancha,num)
+
+# About negative rho values:
+# 关于负rho值:
+#
+# A [theta+0:-rho] tuple is the same as [theta+180:+rho].
+
+
+    
